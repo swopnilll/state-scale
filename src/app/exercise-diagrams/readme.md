@@ -2,6 +2,13 @@
 
 ## Core Concepts
 
+### Incidental vs. Accidental Complexity
+
+- **Incidental Complexity**: The irreducible complexity that comes from the problem domain itself (unavoidable)
+- **Accidental Complexity**: The complexity that comes from the way we implement the solution (avoidable; self-inflicted)
+- Modeling is a way to map out the incidental complexity, so that there are no surprises when we start building
+- Goal is to separate the incidental complexity from the accidental complexity
+
 ### The Power of Quick Documentation
 
 - **Rule**: Document your application's high-level structure and flows, even in simple text format
