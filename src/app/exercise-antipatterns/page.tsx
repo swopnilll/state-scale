@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,15 +22,10 @@ function FilteredDestinations() {
     { id: 3, name: 'New York', country: 'USA', rating: 4.3 },
   ]);
   const [filterRating, setFilterRating] = useState(4.5);
-  const [filteredDestinations, setFilteredDestinations] = useState<
-    typeof destinations
-  >([]);
 
-  useEffect(() => {
-    setFilteredDestinations(
-      destinations.filter((dest) => dest.rating >= filterRating)
-    );
-  }, [destinations, filterRating]);
+  const filteredDestinations = destinations.filter(
+    (dest) => dest.rating >= filterRating
+  );
 
   return (
     <Card>
@@ -76,11 +71,8 @@ function TripSummary() {
     { id: 2, name: 'Hotel', cost: 300 },
     { id: 3, name: 'Activities', cost: 200 },
   ]);
-  const [totalCost, setTotalCost] = useState(0);
 
-  useEffect(() => {
-    setTotalCost(tripItems.reduce((sum, item) => sum + item.cost, 0));
-  }, [tripItems]);
+  const totalCost = tripItems.reduce((sum, item) => sum + item.cost, 0);
 
   return (
     <Card>
@@ -112,16 +104,13 @@ function TripSummary() {
 // Example 3: Available Dates
 function AvailableDates() {
   const [bookedDates] = useState(['2024-06-01', '2024-06-02', '2024-06-03']);
-  const [availableDates, setAvailableDates] = useState<string[]>([]);
 
-  useEffect(() => {
-    const allDates = Array.from({ length: 30 }, (_, i) => {
-      const date = new Date('2024-06-01');
-      date.setDate(date.getDate() + i);
-      return date.toISOString().split('T')[0];
-    });
-    setAvailableDates(allDates.filter((date) => !bookedDates.includes(date)));
-  }, [bookedDates]);
+  const allDates = Array.from({ length: 30 }, (_, i) => {
+    const date = new Date('2024-06-01');
+    date.setDate(date.getDate() + i);
+    return date.toISOString().split('T')[0];
+  });
+  const availableDates = allDates.filter((date) => !bookedDates.includes(date));
 
   return (
     <Card>
@@ -269,37 +258,38 @@ function SearchResults() {
 // Example 6: Booking Timer
 function BookingTimer() {
   const [timeLeft, setTimeLeft] = useState(300);
-  const [timerId, setTimerId] = useState<NodeJS.Timeout | null>(null);
+  // const [timerId, setTimerId] = useState<NodeJS.Timeout | null>(null);
+  const timerIdRef = useRef<NodeJS.Timeout | null>(null);
 
   const startTimer = () => {
-    if (timerId) clearInterval(timerId);
+    if (timerIdRef.current) clearInterval(timerIdRef.current);
 
     const id = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(id);
-          setTimerId(null); // ❌ Unnecessary re-render
+          timerIdRef.current = null;
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
 
-    setTimerId(id); // ❌ Unnecessary re-render
+    timerIdRef.current = id;
   };
 
   const stopTimer = () => {
-    if (timerId) {
-      clearInterval(timerId);
-      setTimerId(null); // ❌ Unnecessary re-render
+    if (timerIdRef.current) {
+      clearInterval(timerIdRef.current);
+      timerIdRef.current = null;
     }
   };
 
   useEffect(() => {
     return () => {
-      if (timerId) clearInterval(timerId);
+      if (timerIdRef.current) clearInterval(timerIdRef.current);
     };
-  }, [timerId]); // ❌ Effect runs every time timerId changes
+  }, []);
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
@@ -342,15 +332,17 @@ function HotelGallery() {
     'hotel-pool.jpg',
     'hotel-restaurant.jpg',
   ]);
-  const [lastScrollPosition, setLastScrollPosition] = useState(0);
+  // const [lastScrollPosition, setLastScrollPosition] = useState(0);
+  const lastScrollPositionRef = useRef<number>(0);
 
   useEffect(() => {
     const handleScroll = () => {
       const currentPosition = window.scrollY;
 
-      setLastScrollPosition(currentPosition);
+      // setLastScrollPosition(currentPosition);
+      lastScrollPositionRef.current = currentPosition;
 
-      if (currentPosition > lastScrollPosition) {
+      if (currentPosition > lastScrollPositionRef.current) {
         console.log('Scrolling down');
       } else {
         console.log('Scrolling up');
@@ -359,7 +351,7 @@ function HotelGallery() {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollPosition]); // ❌ Effect re-runs on every scroll
+  }, []);
 
   return (
     <Card>
@@ -483,13 +475,13 @@ function HotelSelection() {
       amenities: ['WiFi', 'Pool', 'Beach Access'],
     },
   ]);
-  const [selectedHotel, setSelectedHotel] = useState<(typeof hotels)[0] | null>(
-    null
-  );
+  const [selectedHotelId, setSelectedHotelId] = useState<string | null>(null);
 
-  const handleHotelSelect = (hotel: (typeof hotels)[0]) => {
-    setSelectedHotel(hotel);
+  const handleHotelSelect = (hotelId: string) => {
+    setSelectedHotelId(hotelId);
   };
+
+  const selectedHotel = hotels.find((hotel) => hotel.id === selectedHotelId);
 
   return (
     <Card>
@@ -568,18 +560,6 @@ function TravelPreferences() {
     },
   });
 
-  const [userName, setUserName] = useState('');
-  const [userEmail, setUserEmail] = useState('');
-  const [userBudget, setUserBudget] = useState('');
-  const [userTravelStyle, setUserTravelStyle] = useState('');
-
-  useEffect(() => {
-    setUserName(userProfile.name);
-    setUserEmail(userProfile.email);
-    setUserBudget(userProfile.preferences.budget);
-    setUserTravelStyle(userProfile.preferences.travelStyle);
-  }, [userProfile]);
-
   return (
     <Card>
       <CardHeader>
@@ -613,16 +593,16 @@ function TravelPreferences() {
             </Label>
             <div className="mt-1 space-y-1 text-sm">
               <p>
-                <strong>Name:</strong> {userName}
+                <strong>Name:</strong> {userProfile.name}
               </p>
               <p>
-                <strong>Email:</strong> {userEmail}
+                <strong>Email:</strong> {userProfile.email}
               </p>
               <p>
-                <strong>Budget:</strong> {userBudget}
+                <strong>Budget:</strong> {userProfile.preferences.budget}
               </p>
               <p>
-                <strong>Style:</strong> {userTravelStyle}
+                <strong>Style:</strong> {userProfile.preferences.travelStyle}
               </p>
             </div>
           </div>
