@@ -18,6 +18,11 @@ By participating in this workshop, you'll learn to:
 
 ## Getting Started
 
+### Prerequisites
+
+- Node.js 20+ and a package manager (pnpm, npm, or yarn) installed
+- Basic knowledge of React and TypeScript
+
 ### Installation
 
 ```bash
